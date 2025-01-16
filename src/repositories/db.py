@@ -22,10 +22,13 @@ class FakeDatabaseHandler:
             if not include_inactive
             else self.users
         )
-        return users[offset : limit + offset :]
+        return users[offset: limit + offset:]
 
     def get_user(self, user_id: int):
-        return list(filter(lambda x: x["user_id"] == user_id, self.users))[0] or None
+        try:
+            return list(filter(lambda x: x["user_id"] == user_id, self.users))[0]
+        except IndexError:
+            return None
 
     def create_user(self, payload: dict):
         username = payload["username"]
@@ -35,9 +38,10 @@ class FakeDatabaseHandler:
         last_user = self.users[-1]
         last_id = last_user["user_id"]
         self.users.append(
-            {"user_id": last_id + 1, "username": username, "is_active": True}
+            {"user_id": last_id + 1, "username": username,
+                "is_active": True, "addresses": []}
         )
-        return last_id + 1
+        return self.users[-1]
 
     def inactivate_user(self, user_id: int):
         for user in self.users:
